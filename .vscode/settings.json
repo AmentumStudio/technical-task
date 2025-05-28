@@ -1,0 +1,52 @@
+{
+  "nix.enableLanguageServer": true,
+  "nix.formatterPath": "nixfmt",
+  "nix.hiddenLanguageServerErrors": ["textDocument/definition"],
+  "nix.serverPath": "nixd",
+  "nix.serverSettings": {
+    "nil": {
+      "formatting": {
+        "command": ["nixfmt"]
+      }
+    },
+    "nixd": {
+      "formatting": {
+        "command": ["nixfmt"]
+      },
+      "nixpkgs": {
+        "expr": "import (builtins.getFlake (toString ./.)).inputs.nixpkgs { }"
+      },
+      "options": {
+        "devenv": {
+          "expr": "let devenvFlake = (builtins.getFlake (toString ./.)).inputs.devenv; pkgs = import devenvFlake.inputs.nixpkgs {}; in (pkgs.lib.evalModules { modules = [ (devenvFlake.outPath + ''/src/modules/top-level.nix'')];specialArgs = {inherit pkgs; inputs = devenvFlake.inputs;};}).options"
+        }
+      }
+    }
+  },
+  "nixEnvPicker.envFile": "${workspaceFolder}${/}flake.nix",
+  "basedpyright.analysis.extraPaths": [
+    "./containers/greeter/buildcontext/",
+    "./containers/greeter/buildcontext/src"
+  ],
+  "python.analysis.extraPaths": [
+    "./containers/greeter/buildcontext/",
+    "./containers/greeter/buildcontext/src"
+  ],
+  "[dockerfile]": {
+    "editor.defaultFormatter": null,
+    "editor.formatOnPaste": false,
+    "editor.formatOnSave": false,
+    "editor.formatOnType": false,
+    "editor.insertSpaces": false
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  "[helm]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "evenBetterToml.taplo.configFile.enabled": true,
+  "python.testing.cwd": "./containers/greeter/buildcontext/", // TODO: this shouldn't be hardcoded for a monorepo
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
+}

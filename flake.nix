@@ -58,9 +58,15 @@
             version:
             (pkgs-python."${version}".withPackages (
               ps: with ps; [
+                # LSP
                 python-lsp-server
                 python-lsp-jsonrpc
                 python-lsp-ruff
+                # Dev extensions
+                importlib
+                importlib_metadata
+                packaging
+                tomli
               ]
             ));
           greeter = devenv.lib.mkShell {
@@ -79,6 +85,10 @@
                     sync = {
                       # pyproject.toml has to exist
                       enable = true;
+                      allExtras = true;
+                      arguments = [
+                        "--all-groups"
+                      ];
                     };
                   };
                 };
