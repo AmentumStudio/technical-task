@@ -1,0 +1,8 @@
+---
+# To be used as overlay
+services:
+  greeter:
+    image: some_repo/greeter:${RELEASE_VERSION:-0.1.0}-dev
+    build:
+      args:
+        FLAVOUR: dev # either "prod or "dev"

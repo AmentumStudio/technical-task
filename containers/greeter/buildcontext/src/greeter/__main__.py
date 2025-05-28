@@ -1,12 +1,16 @@
-import os
-
+from greeter.api import app  # noqa: F401 # pyright:ignore[reportUnusedImport]
+from greeter.env import app_host, app_port, env, log_level
 from uvicorn import run
 
-from greeter import api.app
+if __name__ == "__main__":  # pragma: no cover
+    # TODO: this should be handled probably more elegantly
+    if env is None:
+        raise RuntimeError("Missing required ENV environment variable!")
 
-log_level = os.getenv("LOG_LEVEL", "debug")
-database_url = os.getenv("DATABASE_URL", "sqlite://memory")
-timeout_seconds = int(os.getenv("TIMEOUT_SECONDS", "30"))
-
-if __name__ == "__main__":
-    run("main:app", host="0.0.0.0", port=8085, reload=False,)
+    run(
+        "greeter.api:app",
+        host=app_host,
+        port=app_port,
+        reload=False,
+        log_level=log_level,
+    )
