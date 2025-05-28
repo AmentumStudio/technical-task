@@ -1,18 +1,13 @@
 import os
 import time
 
-import uvicorn
 from fastapi import FastAPI, HTTPException
-
-app = FastAPI()
 
 env = os.getenv("ENV")
 if env is None:
     raise RuntimeError("Missing required ENV environment variable!")
 
-log_level = os.getenv("LOG_LEVEL", "debug")
-database_url = os.getenv("DATABASE_URL", "sqlite://memory")
-timeout_seconds = int(os.getenv("TIMEOUT_SECONDS", "30"))
+app = FastAPI()
 
 
 @app.on_event("startup")
@@ -42,7 +37,3 @@ async def root():
 @app.post("/data")
 async def create_data(item: dict):
     return {"received": item}
-
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8085, reload=False)
