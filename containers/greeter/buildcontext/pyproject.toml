@@ -1,0 +1,17 @@
+[project]
+dependencies = [
+    "fastapi-cli==0.0.7",
+    "fastapi==0.115.12",
+    "uvicorn==0.34.2",
+]
+description = "Example greeeter FastAPI app for technical task"
+name = "greeter"
+readme = "../README.md"
+requires-python = ">=3.13"
+version = "0.1.0"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "ruff>=0.11.3",
+]
