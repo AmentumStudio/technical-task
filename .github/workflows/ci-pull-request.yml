@@ -32,7 +32,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          version: v0.10.0
+          version: v0.23.0
 
       - name: Get Git commit timestamps
         run: |
