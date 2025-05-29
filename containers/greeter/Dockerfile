@@ -8,6 +8,11 @@ ARG BASE_IMAGE="python:${VERSION_PYTHON:?}-alpine${VERSION_ALPINE:?}"
 ARG UV_IMAGE="ghcr.io/astral-sh/uv:${VERSION_UV:?}"
 ARG FLAVOUR="prod"
 
+ARG UID=10000
+ARG GID=10000
+ARG USER="appuser"
+ARG GROUP="appuser"
+
 FROM "${UV_IMAGE:?}" AS uv-image
 FROM "${BASE_IMAGE:?}" AS base
 	SHELL [ "/bin/ash", "-exu", "-o", "pipefail", "-c" ]
@@ -90,6 +95,18 @@ FROM base AS build-prod
 FROM base AS app-prod
 	ENV FLAVOUR="prod"
 
+	ARG UID
+	ARG GID
+	ARG USER
+	ARG GROUP
+	RUN adduser \
+			-DH \
+			-u "${UID}" \
+			-g "${GID}" \
+			"${USER}" \
+			"${GROUP}" \
+		;
+
 	# dependencies first
 	# use pip via uv to make use of uv's magical cache
 	RUN \
@@ -120,9 +137,12 @@ FROM base AS app-prod
 EndOfRun
 
 	COPY \
+	--chown=${UID:?}:${GID:?} \
 	--chmod=522 \
 		./entrypoint_prod.sh \
 		/entrypoint.sh
+
+	USER ${USER:?}
 
 FROM app-${FLAVOUR:?} AS app-final
 	# Default env variables
