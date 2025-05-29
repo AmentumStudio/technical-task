@@ -1,0 +1,63 @@
+name: CI - Build and Test
+
+on:
+  pull_request:
+    branches: ["main"]
+
+env:
+  # TODO: could use actual PR number, but then running locally gets more difficult
+  RELEASE_TAG: ${{ github.sha }}
+
+jobs:
+  ci:
+    # TODO: reuse common steps between workflows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+
+    steps:
+      ## SETUP
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: extractions/setup-just@v3
+        with:
+          just-version: "1.40.0"
+
+      # https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: v0.10.0
+
+      - name: Get Git commit timestamps
+        run: |
+          set -x
+          echo "GIT_TIMESTAMP=$(git log --max-count=1 --pretty=format:%ct || echo 0)" >> $GITHUB_ENV
+
+      ## TEST
+      - name: Build test containers
+        uses: docker/bake-action@v6
+        env:
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}-test
+          SOURCE_DATE_EPOCH: ${{ env.GIT_TIMESTAMP }}
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: false
+          load: true
+          source: .
+          targets: dev
+
+      - name: CI tests
+        env:
+          tag: ${{ env.RELEASE_TAG }}
+          tag-test: ${{ env.RELEASE_TAG }}-test
+        run: |
+          export RELEASE_VERSION='${{ env.tag }}'
+          just ci-test '${{ env.tag-test }}'
+          just ci-test-cleanup '${{ env.tag-test }}'

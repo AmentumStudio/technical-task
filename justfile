@@ -1,51 +1,22 @@
 set shell := ["/bin/sh", "-eu", "-c"]
 
+export SOURCE_DATE_EPOCH := `git log --max-count=1 --pretty=format:%ct || echo 0`
+
 container-build flavour="all":
-    just container-build-{{flavour}}
-
-container-build-all:
-    just container-build-dev
-    just container-build-prod
-
-container-build-dev:
-    docker compose \
-        -f ./containers/build.compose.yml \
-        -f ./containers/dev.compose.yml \
-        build \
-    ;
-
-container-build-prod:
-    docker compose \
-        -f ./containers/build.compose.yml \
-        build \
+    docker buildx bake \
+        '{{flavour}}' \
     ;
 
 container-images flavour="all":
-    just container-images-{{flavour}}
-
-container-images-all:
-    just container-images-dev
-    just container-images-prod
-
-container-images-dev:
-    docker compose \
-        -f ./containers/build.compose.yml \
-        -f ./containers/dev.compose.yml \
-        config \
-        --images \
-    ;
-
-container-images-prod:
-    docker compose \
-        -f ./containers/build.compose.yml \
-        config \
-        --images \
+    docker buildx bake \
+        {{flavour}} \
+        --print \
+    | jq --raw-output '.target[].tags[]' \
     ;
 
 # TODO: deal with rootless containerd ...
 k3s-local-import-from-docker flavour="all":
-    #!/bin/sh
-    set -eu
+    #!/bin/sh -eu
     which nerdctl 1>/dev/null
     for image in $(just container-images '{{flavour}}'); do
         docker image save "${image}" \
@@ -91,8 +62,7 @@ k3d-cluster-delete name=k3d-cluster-default-name:
     rm '{{k3d-cluster-kubeconfig}}'
 
 k3d-import-from-docker name=k3d-cluster-default-name flavour='all':
-    #!/bin/sh
-    set -eu
+    #!/bin/sh -eu
     which k3d 1>/dev/null
     for image in $(just container-images '{{flavour}}'); do
         k3d image load  \
@@ -136,4 +106,43 @@ clean:
         -rI {} \
         --null \
         rm -r '{}' \
+    ;
+
+ci-test-tag := x'${RELEASE_TAG:-latest}'
+
+# TODO: consider moving to per container justfile
+ci-test tag=ci-test-tag:
+    #!/bin/sh -eu
+    export RELEASE_TAG='{{tag}}'
+    export IMAGE="ghcr.io/amentumstudio/chahanchart-greeter:{{tag}}-dev"
+    docker run \
+        --rm \
+        --entrypoint=uv \
+        --name=greeter-test \
+        "${IMAGE}" \
+        run pytest \
+    ;
+
+ci-test-cleanup tag=ci-test-tag:
+    #!/bin/sh -eu
+    export IMAGE="ghcr.io/amentumstudio/chahanchart-greeter:{{tag}}-dev"
+    docker image rm "${IMAGE}"
+
+ci-all tag=ci-test-tag:
+    #!/bin/sh -eu
+    export RELEASE_TAG='{{tag}}'
+    export IMAGE="ghcr.io/amentumstudio/chahanchart-greeter:{{tag}}-dev"
+    just container-build 'dev'
+    just ci-test '{{tag}}'
+    just ci-test-cleanup '{{tag}}'
+
+ci-local workflow='ci-pull-request':
+    #!/bin/sh -eu
+    which act 1>/dev/null
+    act \
+        --workflows ".github/workflows/{{workflow}}.yml" \
+        --secret-file "" \
+        --var-file "" \
+        --input-file "" \
+        --eventpath "" \
     ;

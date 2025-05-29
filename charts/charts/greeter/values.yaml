@@ -5,7 +5,7 @@ app:
   port: 8085
 
 image:
-  repository: ghcr.io/amentumstudio/greeter
+  repository: ghcr.io/amentumstudio/chahanchart-greeter
   tag: 0.1.0
   pullPolicy: IfNotPresent
 
