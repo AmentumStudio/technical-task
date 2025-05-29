@@ -43,7 +43,10 @@
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
   "[helm]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": null,
+    "editor.insertSpaces": true,
+    "editor.indentSize": 2,
+    "editor.formatOnSave": false
   },
   "evenBetterToml.taplo.configFile.enabled": true,
   "python.testing.cwd": "./containers/greeter/buildcontext/", // TODO: this shouldn't be hardcoded for a monorepo

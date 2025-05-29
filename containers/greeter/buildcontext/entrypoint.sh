@@ -2,7 +2,6 @@
 set -eux
 
 cd /app
-
 case "${FLAVOUR}" in
 	"dev")
 		export LOG_LEVEL="${LOG_LEVEL:-debug}"
@@ -15,9 +14,7 @@ case "${FLAVOUR}" in
 			;
 		;;
 	"prod")
-		(
-			python -m greeter
-		)
+		python -m greeter
 		;;
 	*)
 		echo "Invalid FLAVOUR=${FLAVOUR}"

@@ -1,6 +1,7 @@
+from uvicorn import run
+
 from greeter.api import app  # noqa: F401 # pyright:ignore[reportUnusedImport]
 from greeter.env import app_host, app_port, env, log_level
-from uvicorn import run
 
 if __name__ == "__main__":  # pragma: no cover
     # TODO: this should be handled probably more elegantly

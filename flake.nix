@@ -92,6 +92,11 @@
                     };
                   };
                 };
+                packages = with pkgs; [
+                  dive
+                  just
+                  nerdctl
+                ];
               }
             ];
           };

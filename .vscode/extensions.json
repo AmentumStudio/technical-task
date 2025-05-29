@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    "charliermarsh.ruff",
+    "davidanson.vscode-markdownlint",
+    "detachhead.basedpyright",
+    "edwinhuish.better-comments-next",
+    "esbenp.prettier-vscode",
+    "fill-labs.dependi",
+    "foxundermoon.shell-format",
+    "gruntfuggly.todo-tree",
+    "hbenl.vscode-test-explorer",
+    "io-github-oops418.nix-env-picker",
+    "jnoortheen.nix-ide",
+    "littlefoxteam.vscode-python-test-adapter",
+    "mkhl.direnv",
+    "ms-azuretools.vscode-containers",
+    "nefrob.vscode-just-syntax",
+    "tamasfe.even-better-toml",
+    "timonwong.shellcheck",
+    "vadzimnestsiarenka.helm-template-preview-and-more"
+  ]
+}
