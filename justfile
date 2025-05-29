@@ -2,12 +2,19 @@ set shell := ["/bin/sh", "-eu", "-c"]
 
 export SOURCE_DATE_EPOCH := `git log --max-count=1 --pretty=format:%ct || echo 0`
 
-container-build flavour="all":
+# this allows for easy setting RELEASE_TAG for all targets
+default_tag := x'${RELEASE_TAG:-latest}'
+
+container-build flavour="all" release-tag=default_tag:
+    #!/bin/sh -eu
+    export RELEASE_TAG='{{release-tag}}'
     docker buildx bake \
         '{{flavour}}' \
     ;
 
-container-images flavour="all":
+container-images flavour="all" release-tag=default_tag:
+    #!/bin/sh -eu
+    export RELEASE_TAG='{{release-tag}}'
     docker buildx bake \
         {{flavour}} \
         --print \
@@ -15,10 +22,10 @@ container-images flavour="all":
     ;
 
 # TODO: deal with rootless containerd ...
-k3s-local-import-from-docker flavour="all":
+k3s-local-import-from-docker flavour="all" release-tag=default_tag:
     #!/bin/sh -eu
     which nerdctl 1>/dev/null
-    for image in $(just container-images '{{flavour}}'); do
+    for image in $(just container-images '{{flavour}}' '{{release-tag}}'); do
         docker image save "${image}" \
         | sudo nerdctl \
             -n k8s.io \
@@ -27,14 +34,22 @@ k3s-local-import-from-docker flavour="all":
         ;
     done;
 
-k3s-local-container flavour="all":
-    just container-build '{{flavour}}'
-    just k3s-local-import-from-docker '{{flavour}}'
+k3s-local-container flavour="all" release-tag=default_tag:
+    just container-build '{{flavour}}' '{{release-tag}}'
+    just k3s-local-import-from-docker '{{flavour}}' '{{release-tag}}'
 
-k3s-local-helm:
+k3s-local-helm-destroy:
     helmfile destroy || true
-    just k3s-local-container
-    helmfile apply
+
+k3s-local-helm-apply release-tag=default_tag:
+    helmfile apply \
+        --set=greeter.image.tag='{{release-tag}}' \
+    ;
+
+k3s-local-helm release-tag=default_tag:
+    just k3s-local-container '{{release-tag}}'
+    just k3s-local-helm-destroy
+    just k3s-local-helm-apply '{{release-tag}}'
     helm list
 
 k3d-cluster-default-name := 'greeter-cluster'
@@ -61,10 +76,10 @@ k3d-cluster-delete name=k3d-cluster-default-name:
     ;
     rm '{{k3d-cluster-kubeconfig}}'
 
-k3d-import-from-docker name=k3d-cluster-default-name flavour='all':
+k3d-import-from-docker name=k3d-cluster-default-name flavour='all' release-tag=default_tag:
     #!/bin/sh -eu
     which k3d 1>/dev/null
-    for image in $(just container-images '{{flavour}}'); do
+    for image in $(just container-images '{{flavour}}' '{{release-tag}}'); do
         k3d image load  \
             --cluster='{{name}}' \
             "${image}" \
@@ -74,24 +89,25 @@ k3d-import-from-docker name=k3d-cluster-default-name flavour='all':
 k3d-helm-destroy name=k3d-cluster-default-name:
     KUBECONFIG='{{k3d-cluster-kubeconfig}}' helmfile destroy || true
 
-k3d-helm-apply name=k3d-cluster-default-name:
+k3d-helm-apply name=k3d-cluster-default-name release-tag=default_tag:
     KUBECONFIG='{{k3d-cluster-kubeconfig}}' helmfile apply \
+        --set=greeter.image.tag='{{release-tag}}' \
         --set=greeter.ingress.enabled=true \
         --set=greeter.ingress.type=nginx \
         --set=greeter.ingress.path='/' \
     ;
 
-k3d-helm name=k3d-cluster-default-name:
+k3d-helm name=k3d-cluster-default-name release-tag=default_tag:
     just k3d-helm-destroy '{{name}}'
-    just k3d-helm-apply '{{name}}'
+    just k3d-helm-apply '{{name}}' '{{release-tag}}'
     KUBECONFIG='{{k3d-cluster-kubeconfig}}' helm list
     KUBECONFIG='{{k3d-cluster-kubeconfig}}' kubectl get svc
 
 # This will take some time, so don't abuse
-k3d name=k3d-cluster-default-name port=k3d-cluster-default-port:
+k3d name=k3d-cluster-default-name port=k3d-cluster-default-port release-tag=default_tag:
     just k3d-cluster-delete '{{name}}' || true
     just k3d-cluster-create '{{name}}' '{{port}}'
-    just container-build
+    just container-build 'all' '{{release-tag}}'
     just k3d-import-from-docker '{{name}}'
     just k3d-helm '{{name}}'
 
@@ -108,13 +124,10 @@ clean:
         rm -r '{}' \
     ;
 
-ci-test-tag := x'${RELEASE_TAG:-latest}'
-
 # TODO: consider moving to per container justfile
-ci-test tag=ci-test-tag:
+ci-test release-tag=default_tag:
     #!/bin/sh -eu
-    export RELEASE_TAG='{{tag}}'
-    export IMAGE="ghcr.io/amentumstudio/chahanchart-greeter:{{tag}}-dev"
+    export IMAGE="ghcr.io/amentumstudio/chahanchart-greeter:{{release-tag}}-dev"
     docker run \
         --rm \
         --entrypoint=uv \
@@ -123,18 +136,17 @@ ci-test tag=ci-test-tag:
         run pytest \
     ;
 
-ci-test-cleanup tag=ci-test-tag:
+ci-test-cleanup release-tag=default_tag:
     #!/bin/sh -eu
-    export IMAGE="ghcr.io/amentumstudio/chahanchart-greeter:{{tag}}-dev"
+    export IMAGE="ghcr.io/amentumstudio/chahanchart-greeter:{{release-tag}}-dev"
     docker image rm "${IMAGE}"
 
-ci-all tag=ci-test-tag:
+ci-all release-tag=default_tag:
     #!/bin/sh -eu
-    export RELEASE_TAG='{{tag}}'
-    export IMAGE="ghcr.io/amentumstudio/chahanchart-greeter:{{tag}}-dev"
-    just container-build 'dev'
-    just ci-test '{{tag}}'
-    just ci-test-cleanup '{{tag}}'
+    export IMAGE="ghcr.io/amentumstudio/chahanchart-greeter:{{release-tag}}-dev"
+    just container-build 'dev' '{{release-tag}}'
+    just ci-test '{{release-tag}}'
+    just ci-test-cleanup '{{release-tag}}'
 
 gha-local workflow='ci-pull-request':
     #!/bin/sh -eu
