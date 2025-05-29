@@ -136,7 +136,7 @@ ci-all tag=ci-test-tag:
     just ci-test '{{tag}}'
     just ci-test-cleanup '{{tag}}'
 
-ci-local workflow='ci-pull-request':
+gha-local workflow='ci-pull-request':
     #!/bin/sh -eu
     which act 1>/dev/null
     act \
