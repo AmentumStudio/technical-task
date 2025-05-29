@@ -6,7 +6,7 @@ app:
 
 image:
   repository: ghcr.io/amentumstudio/chahanchart-greeter
-  tag: 0.1.0
+  tag: 0.1.1
   pullPolicy: IfNotPresent
 
 ingress:

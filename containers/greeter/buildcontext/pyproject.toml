@@ -7,7 +7,7 @@ description = "Example greeeter FastAPI app for technical task"
 name = "greeter"
 readme = "../README.md"
 requires-python = ">=3.13"
-version = "0.1.0"
+version = "0.1.1"
 
 [dependency-groups]
 dev = [
