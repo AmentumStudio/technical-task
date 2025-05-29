@@ -42,7 +42,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          version: v0.10.0
+          version: v0.23.0
 
       - name: Get Git commit timestamps
         run: |
@@ -53,8 +53,8 @@ jobs:
       - name: Cache ./containers/greeter/Dockerfile:/root/.cache/uv
         uses: actions/cache@v3
         with:
-          path: root-.cache-uv
-          key: root-.cache-uv-${{ hashFiles('./containers/greeter/Dockerfile') }}
+          path: root-cache-uv
+          key: root-cache-uv-${{ hashFiles('./containers/greeter/Dockerfile') }}
 
       # TODO: fifure out how to deal with multiple containers
       - name: inject cache into docker
@@ -62,7 +62,7 @@ jobs:
         with:
           cache-map: |
             {
-              "root-.cache-uv": "/root/.cache/uv"
+              "root-cache-uv": "/root/.cache/uv"
             }
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
