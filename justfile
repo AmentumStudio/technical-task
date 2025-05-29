@@ -82,8 +82,8 @@ k3d-helm-apply name=k3d-cluster-default-name:
     ;
 
 k3d-helm name=k3d-cluster-default-name:
-    just k3d-helm-destroy='{{name}}'
-    just k3d-helm-apply='{{name}}'
+    just k3d-helm-destroy '{{name}}'
+    just k3d-helm-apply '{{name}}'
     KUBECONFIG='{{k3d-cluster-kubeconfig}}' helm list
     KUBECONFIG='{{k3d-cluster-kubeconfig}}' kubectl get svc
 
