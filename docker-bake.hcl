@@ -52,7 +52,10 @@ target "greeter-dev" {
 target "greeter-prod" {
     dockerfile = "../Dockerfile"
     context = "./containers/greeter/buildcontext"
-    tags = ["ghcr.io/amentumstudio/chahanchart-greeter:${RELEASE_TAG}"]
+    tags = [
+        "ghcr.io/amentumstudio/chahanchart-greeter:${RELEASE_TAG}",
+        "ghcr.io/amentumstudio/chahanchart-greeter:latest"
+    ]
     args = {
         "FLAVOUR" = "prod"
     }
