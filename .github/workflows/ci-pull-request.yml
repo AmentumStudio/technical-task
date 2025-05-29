@@ -1,4 +1,4 @@
-name: CI - Build and Test
+name: CI - Build, Test, Release
 
 on:
   pull_request:
@@ -46,11 +46,12 @@ jobs:
           RELEASE_TAG: ${{ env.RELEASE_TAG }}-test
           SOURCE_DATE_EPOCH: ${{ env.GIT_TIMESTAMP }}
         with:
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           push: false
           load: true
           source: .
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
           targets: dev
 
       - name: CI tests

@@ -56,11 +56,12 @@ jobs:
           RELEASE_TAG: ${{ env.RELEASE_TAG }}-test
           SOURCE_DATE_EPOCH: ${{ env.GIT_TIMESTAMP }}
         with:
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           push: false
           load: true
           source: .
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
           targets: dev
 
       - name: CI tests
@@ -79,9 +80,10 @@ jobs:
           RELEASE_TAG: ${{ env.RELEASE_TAG }}
           SOURCE_DATE_EPOCH: ${{ env.GIT_TIMESTAMP }}
         with:
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           push: true
           load: false
           source: .
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
           targets: prod
