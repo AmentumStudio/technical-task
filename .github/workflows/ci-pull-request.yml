@@ -39,6 +39,23 @@ jobs:
           set -x
           echo "GIT_TIMESTAMP=$(git log --max-count=1 --pretty=format:%ct || echo 0)" >> $GITHUB_ENV
 
+      # add persistent caching of --mount=type=cache,target=/root/.cache/uv
+      - name: Cache ./containers/greeter/Dockerfile:/root/.cache/uv
+        uses: actions/cache@v3
+        with:
+          path: root-.cache-uv
+          key: root-.cache-uv-${{ hashFiles('./containers/greeter/Dockerfile') }}
+
+      # TODO: fifure out how to deal with multiple containers
+      - name: inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+        with:
+          cache-map: |
+            {
+              "root-.cache-uv": "/root/.cache/uv"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+
       ## TEST
       - name: Build test containers
         uses: docker/bake-action@v6
