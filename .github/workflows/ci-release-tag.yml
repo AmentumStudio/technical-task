@@ -5,7 +5,8 @@ on:
     # Publish semver tags as releases.
     tags: ["v*.*.*"]
 
-env: {}
+env:
+  REGISTRY: ghcr.io
 
 jobs:
   ci:
@@ -91,6 +92,14 @@ jobs:
           just ci-test-cleanup '${{ env.tag-test }}'
 
       ## RELEASE
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name == 'pull_request'
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build & Push prod containers
         uses: docker/bake-action@v6
         env:
