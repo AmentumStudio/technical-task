@@ -46,8 +46,8 @@ k3s-local-helm-apply release-tag=default_tag:
         --set=greeter.image.tag='{{release-tag}}' \
     ;
 
-k3s-local-helm release-tag=default_tag:
-    just k3s-local-container '{{release-tag}}'
+k3s-local-helm flavour="prod" release-tag=default_tag:
+    just k3s-local-container '{{flavour}}' '{{release-tag}}'
     just k3s-local-helm-destroy
     just k3s-local-helm-apply '{{release-tag}}'
     helm list
@@ -107,8 +107,8 @@ k3d-helm name=k3d-cluster-default-name release-tag=default_tag:
 k3d name=k3d-cluster-default-name port=k3d-cluster-default-port release-tag=default_tag:
     just k3d-cluster-delete '{{name}}' || true
     just k3d-cluster-create '{{name}}' '{{port}}'
-    just container-build 'all' '{{release-tag}}'
-    just k3d-import-from-docker '{{name}}'
+    just container-build 'prod' '{{release-tag}}'
+    just k3d-import-from-docker '{{name}}' 'prod' '{{release-tag}}'
     just k3d-helm '{{name}}'
 
 clean:
