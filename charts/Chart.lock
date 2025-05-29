@@ -1,0 +1,6 @@
+dependencies:
+- name: greeter
+  repository: ""
+  version: '*-0'
+digest: sha256:28804ff79b0152f088c01dd063155cd0696c1093028c3420413d2a961dba717d
+generated: "2025-05-29T05:44:34.159154593+02:00"

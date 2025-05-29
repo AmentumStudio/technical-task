@@ -1,0 +1,10 @@
+---
+apiVersion: v2
+name: greeter
+description: A small greeter app
+
+type: application
+icon: https://www.svgrepo.com/download/330413/fastapi.svg
+version: 0.1.0
+
+appVersion: "latest"

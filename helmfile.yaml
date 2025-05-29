@@ -1,0 +1,7 @@
+---
+releases:
+  - name: chahanchart
+    chart: ./charts/
+    namespace: default
+    atomic: true
+    cleanupOnFail: true

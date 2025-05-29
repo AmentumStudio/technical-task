@@ -1,0 +1,14 @@
+---
+apiVersion: v2
+name: chahanchart # pun on Shahanshah
+description: Chart of charts for entire project
+
+type: application
+# TODO: add icon
+version: 0.1.0
+
+appVersion: "latest"
+
+dependencies:
+  - name: greeter
+    version: "*-0"

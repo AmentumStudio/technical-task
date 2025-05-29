@@ -1,0 +1,10 @@
+greeter:
+  ingress:
+    enabled: true
+    type: traefik
+    # change to localhost, or owned domain
+    host: k3s.myrkheimr.local
+    path: /greeter
+
+  service:
+    nodePort: 30007

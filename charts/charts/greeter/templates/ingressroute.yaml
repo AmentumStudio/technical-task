@@ -1,0 +1,30 @@
+{{- $fullName := include "greeter.fullname" . -}}
+{{- $stripprefix := printf "%s-%s" $fullName "stripprefix" -}}
+{{- if and .Values.ingress.enabled (eq .Values.ingress.type "traefik") -}}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ $stripprefix }}
+spec:
+  stripPrefix:
+    prefixes:
+      - {{ .Values.ingress.path }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ $fullName }}-ingressroute
+spec:
+  entryPoints:
+    - web
+  routes:
+  - kind: Rule
+    match: Host(`{{ .Values.ingress.host }}`) && PathPrefix(`{{ .Values.ingress.path }}`)
+    middlewares:
+    - name: {{ $stripprefix }}
+    services:
+    - kind: Service
+      name: {{ $fullName }}
+      port: {{ .Values.service.port }}
+{{- end -}}

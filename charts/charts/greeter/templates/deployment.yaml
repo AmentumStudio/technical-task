@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "greeter.fullname" . }}-deployment
+  labels:
+    {{- include "greeter.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "greeter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "greeter.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "greeter.fullname" . }}-app-configmap
+          ports:
+            - name: http
+              containerPort: {{ .Values.app.port | default 8085 }}
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.probes.initialDelaySeconds }}
+            httpGet:
+              path: /live
+              port: http
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.probes.initialDelaySeconds }}
+            httpGet:
+              path: /ready
+              port: http
+          resources: {{- toYaml .Values.resources | nindent 12 }}
